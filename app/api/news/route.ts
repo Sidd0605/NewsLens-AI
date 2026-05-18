@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { generateText } from "ai"
+import { createGroq } from "@ai-sdk/groq"
 
 const NEWS_SOURCES = [
   { id: "cnn", name: "CNN" },
@@ -16,11 +17,13 @@ const NEWS_CATEGORIES = ["business", "entertainment", "general", "health", "scie
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
+
 async function generateSummaryWithRetry(article: any, maxRetries = 2): Promise<{ summary: string; sentiment: string }> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const { text: response } = await generateText({
-        model: "groq/llama-3.1-8b-instant",
+        model: groq("llama-3.1-8b-instant"),
         prompt: `Analyze this news article and provide:
 1. A 2-3 sentence summary focusing on key facts
 2. The overall sentiment (Positive, Negative, or Neutral)
@@ -59,7 +62,7 @@ async function translateArticle(
 ): Promise<{ translatedTitle: string; translatedDescription: string; originalLanguage: string }> {
   try {
     const { text: response } = await generateText({
-      model: "groq/llama-3.1-8b-instant",
+      model: groq("llama-3.1-8b-instant"),
       prompt: `Analyze this article and determine if it's in English. If not, translate it to English and identify the original language.
 
 Format your response as:
